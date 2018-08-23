@@ -34,7 +34,7 @@ function testIt(func) {
     };
 }
 
-const RpcServer = require('../lib/RpcServer');
+const {RpcServer} = require('../index');
 
 class MyClass {
     constructor(num)
@@ -143,9 +143,9 @@ describe('RpcServer test', function () {
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const expressMiddleware = require('../lib/expressMiddleware');
-const RpcClient = require('../lib/RpcClient');
-const TransportHttp = require('../lib/TransportHttp');
+const {expressMiddleware} = require('../index');
+const {RpcClient} = require('../index');
+const {TransportHttp} = require('../index');
 
 describe('RpcServer express middleware test', function () {
     this.timeout(2000);
@@ -231,9 +231,9 @@ describe('RpcServer express middleware test', function () {
         } catch (err) {
             e = err;
         }
-        
+
         client.timeout = 5000;
-        
+
         expect(e).to.exist;
         expect(r).to.be.undefined;
         expect(e.message).to.equal('Timed out');
