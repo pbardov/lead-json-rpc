@@ -19,12 +19,15 @@
   "author": "Pavel Bardov <pavel at vsgsoft dot com>",
   "license": "MIT",
   "devDependencies": {
+    "body-parser": "^1.18.3",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "express": "^4.16.3",
     "mocha": "^5.2.0"
   },
   "dependencies": {
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.5",
     "underscore": "^1.9.1"
   }
 }
