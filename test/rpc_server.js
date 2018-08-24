@@ -220,6 +220,23 @@ describe('RpcServer express middleware test', function () {
         }
         expect(e).to.exist;
         expect(r).to.be.undefined;
+
+        console.log('Error object output (not a error): \n', e);
+    });
+
+    it('Test call method with bug', async () => {
+        let r, e;
+        try {
+            let r = await client.invoke('obj.wrongMethod');
+        } catch (err) {
+            e = err;
+        }
+
+        expect(e).to.exist;
+        expect(r).to.be.undefined;
+        expect(e.code).to.be.within(-32099, -32000);
+
+        console.log('Error object output (not a error): \n', e);
     });
 
     it('Test call timeout', async () => {
