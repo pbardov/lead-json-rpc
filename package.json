@@ -1,6 +1,6 @@
 {
   "name": "@pbardov/lead-json-rpc",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Simple JSON-RPC server with es7 features",
   "main": "index.js",
   "scripts": {
@@ -19,15 +19,20 @@
   "author": "Pavel Bardov <pavel at vsgsoft dot com>",
   "license": "MIT",
   "devDependencies": {
+    "babel-eslint": "^9.0.0",
     "body-parser": "^1.18.3",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
+    "eslint": "^5.0.0",
+    "eslint-config-airbnb": "^17.0.0",
+    "eslint-plugin-import": "^2.11.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-react": "^7.7.0",
     "express": "^4.16.3",
     "mocha": "^5.2.0"
   },
   "dependencies": {
-    "request": "^2.88.0",
-    "request-promise-native": "^1.0.5",
+    "superagent": "^3.8.3",
     "underscore": "^1.9.1"
   }
 }

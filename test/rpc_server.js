@@ -15,20 +15,20 @@ const { assert, expect } = chai;
 const should = chai.should();
 
 function asyncTimeout(ival) {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     setTimeout(resolve, ival);
   });
 }
 
 function testIt(func) {
-  return () => new Promise((resolve, reject) => {
-      const thenable = { then: (_resolve) => _resolve(func()) };
-      Promise
-        .resolve(thenable)
-        .then((res) => {
+  return () =>
+    new Promise((resolve, reject) => {
+      const thenable = { then: _resolve => _resolve(func()) };
+      Promise.resolve(thenable)
+        .then(res => {
           resolve(res);
         })
-        .catch((err) => {
+        .catch(err => {
           console.error('Error: \n', err);
           reject(err);
         });
@@ -65,17 +65,17 @@ class MyClass {
   }
 }
 
-describe('RpcServer test', function () {
+describe('RpcServer test', function() {
   this.timeout(2000);
 
   let rpc, obj;
   it('Test create rpc server', () => {
-    rpc = new RpcServer;
-    obj = new MyClass;
+    rpc = new RpcServer();
+    obj = new MyClass();
 
     expect(rpc).to.be.exist;
     rpc.regObject(obj, { namespace: 'obj' });
-    rpc.regMethod('echo', (s) => {
+    rpc.regMethod('echo', s => {
       return s;
     });
   });
@@ -90,25 +90,28 @@ describe('RpcServer test', function () {
       id: `${now.getTime()}${Math.random() * 1000}`
     };
 
-//        console.log('request: \n', request);
+    //        console.log('request: \n', request);
 
     const rawAnswer = await rpc.serveRequest(JSON.stringify(request));
 
     const answer = JSON.parse(rawAnswer);
 
-//        console.log('answer: \n', answer);
+    //        console.log('answer: \n', answer);
     return answer;
   }
 
-  it('Test method call', testIt(async () => {
-    let r1 = await doRpcCall('obj.add', 10);
-    expect(r1.result).to.equal(10);
-    let r2 = await doRpcCall('obj.sub', 3);
-    expect(r2.result).to.equal(7);
-    expect(obj.n).to.equal(7);
-    let r3 = await doRpcCall('echo', 'haha');
-    expect(r3.result).to.equal('haha');
-  }));
+  it(
+    'Test method call',
+    testIt(async () => {
+      let r1 = await doRpcCall('obj.add', 10);
+      expect(r1.result).to.equal(10);
+      let r2 = await doRpcCall('obj.sub', 3);
+      expect(r2.result).to.equal(7);
+      expect(obj.n).to.equal(7);
+      let r3 = await doRpcCall('echo', 'haha');
+      expect(r3.result).to.equal('haha');
+    })
+  );
 
   it('Test method not found error thrown', async () => {
     let r = await doRpcCall('obj.not_exist_method', 200);
@@ -142,10 +145,10 @@ const { expressMiddleware } = require('../index');
 const { RpcClient } = require('../index');
 const { TransportHttp } = require('../index');
 
-describe('RpcServer express middleware test', function () {
+describe('RpcServer express middleware test', function() {
   this.timeout(2000);
 
-  after(async function () {
+  after(async function() {
     this.timeout(5000);
 
     process.exit();
@@ -158,16 +161,28 @@ describe('RpcServer express middleware test', function () {
   it('Test create express app', () => {
     app = express();
 
-    app.use(bodyParser.json());       // to support JSON-encoded bodies
-    app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
-      extended: true
-    }));
+    const rawBodySaver = (req, res, buf, encoding) => {
+      if (buf && buf.length) {
+        req.rawBody = buf.toString(encoding || 'utf8');
+      }
+    };
+
+    app.use(bodyParser.json({ verify: rawBodySaver }));
+    app.use(bodyParser.urlencoded({ verify: rawBodySaver, extended: true }));
+    app.use(
+      bodyParser.raw({
+        verify: rawBodySaver,
+        type() {
+          return true;
+        }
+      })
+    );
   });
 
   let rpc, obj;
   it('Test create rpc server', () => {
-    rpc = new RpcServer;
-    obj = new MyClass;
+    rpc = new RpcServer();
+    obj = new MyClass();
 
     expect(rpc).to.be.exist;
     rpc.regObject(obj, { namespace: 'obj' });
@@ -181,10 +196,17 @@ describe('RpcServer express middleware test', function () {
   });
 
   it('Test register rpc middleware', () => {
+    // app.use('/api', (req, res, next) => {
+    //   console.log('request headers = ', req.headers);
+    //   console.log('req.body = \n', req.body);
+    //   console.log('req.rawBody = \n', req.rawBody ? req.rawBody.toString() : null);
+    //   next();
+    // });
+
     app.use('/api', expressMiddleware(rpc));
   });
 
-  it('Test start express http server', (done) => {
+  it('Test start express http server', done => {
     app.listen(httpPort, () => done());
   });
 
@@ -196,15 +218,18 @@ describe('RpcServer express middleware test', function () {
     expect(client).to.exist;
   });
 
-  it('Test method call', testIt(async () => {
-    let r1 = client.invoke('obj.add', 10);
-    let r2 = client.invoke('obj.sub', 3);
-    let r3 = client.invoke('echo', 'haha');
-    expect(await r1).to.equal(10);
-    expect(await r2).to.equal(7);
-    expect(obj.n).to.equal(7);
-    expect(await r3).to.equal('haha');
-  }));
+  it(
+    'Test method call',
+    testIt(async () => {
+      let r1 = client.invoke('obj.add', 10);
+      let r2 = client.invoke('obj.sub', 3);
+      let r3 = client.invoke('echo', 'haha');
+      expect(await r1).to.equal(10);
+      expect(await r2).to.equal(7);
+      expect(obj.n).to.equal(7);
+      expect(await r3).to.equal('haha');
+    })
+  );
 
   it('Test method not found error thrown', async () => {
     let r, e;
