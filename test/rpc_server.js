@@ -231,6 +231,28 @@ describe('RpcServer express middleware test', function() {
     })
   );
 
+  it(
+    'Test batch auto commit',
+    testIt(async () => {
+      client.beginBatch();
+
+      obj.n = 0;
+
+      let r1 = client.invoke('obj.add', 10);
+      let r2 = client.invoke('obj.sub', 3);
+      let r3 = client.invoke('echo', 'haha');
+
+      await asyncTimeout(1000);
+
+      expect(await r1).to.equal(10);
+      expect(await r2).to.equal(7);
+      expect(obj.n).to.equal(7);
+      expect(await r3).to.equal('haha');
+
+      client.endBatch();
+    })
+  );
+
   it('Test method not found error thrown', async () => {
     let r, e;
     try {
