@@ -1,6 +1,6 @@
 {
   "name": "@pbardov/lead-json-rpc",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Simple JSON-RPC server with es7 features",
   "main": "index.js",
   "scripts": {
@@ -32,6 +32,7 @@
     "mocha": "^5.2.0"
   },
   "dependencies": {
+    "crypto-browserify": "^3.12.0",
     "superagent": "^3.8.3",
     "underscore": "^1.9.1"
   }

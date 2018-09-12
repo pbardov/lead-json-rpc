@@ -253,6 +253,27 @@ describe('RpcServer express middleware test', function() {
     })
   );
 
+  const auth = { key: 'my_key', secret: 'my_secret_phrase' };
+
+  it(
+    'Test auth',
+    testIt(async () => {
+      rpc.setAuth({ [auth.key]: auth.secret });
+
+      let r, e;
+      try {
+        r = await client.invoke('echo', 'must thrown');
+      } catch (err) {
+        e = err;
+      }
+      expect(e).to.exist;
+
+      client.auth = auth;
+      r = await client.invoke('echo', 'must no thrown');
+      expect(r).to.equal('must no thrown');
+    })
+  );
+
   it('Test method not found error thrown', async () => {
     let r, e;
     try {
