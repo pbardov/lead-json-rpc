@@ -253,6 +253,26 @@ describe('RpcServer express middleware test', function() {
     })
   );
 
+  it(
+    'Test batch object autocommit',
+    testIt(async () => {
+      const batch = client.createBatch();
+
+      obj.n = 0;
+
+      let r1 = batch.invoke('obj.add', 10);
+      let r2 = batch.invoke('obj.sub', 3);
+      let r3 = batch.invoke('echo', 'haha');
+
+      await asyncTimeout(1000);
+
+      expect(await r1).to.equal(10);
+      expect(await r2).to.equal(7);
+      expect(obj.n).to.equal(7);
+      expect(await r3).to.equal('haha');
+    })
+  );
+
   const auth = { key: 'my_key', secret: 'my_secret_phrase' };
 
   it(
