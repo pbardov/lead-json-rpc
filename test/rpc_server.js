@@ -338,4 +338,172 @@ describe('RpcServer express middleware test', function() {
     expect(r).to.be.undefined;
     expect(e.message).to.equal('Timed out');
   });
+
+  const { ServerStream, TransportStream } = require('../index');
+
+  describe('RpcServer stream test', function() {
+    this.timeout(2000);
+
+    after(async function() {
+      this.timeout(5000);
+
+      process.exit();
+    });
+
+    let rpc, obj;
+    it('Create server stream', () => {
+      rpc = new RpcServer();
+      obj = new MyClass();
+
+      expect(rpc).to.be.exist;
+      rpc.regObject(obj, { namespace: 'obj' });
+      rpc.regMethod('echo', (s, delay = 0) => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve(s);
+          }, delay);
+        });
+      });
+    });
+
+    let srvStream;
+    it(
+      'Create rpc server stream',
+      testIt(() => {
+        srvStream = new ServerStream({ rpcServer: rpc });
+      })
+    );
+
+    let client;
+    it(
+      'Test create client',
+      testIt(() => {
+        const transport = new TransportStream({ stream: srvStream });
+        client = new RpcClient(transport);
+
+        expect(client).to.exist;
+      })
+    );
+
+    it(
+      'Test method call',
+      testIt(async () => {
+        let r1 = client.invoke('obj.add', 10);
+        let r2 = client.invoke('obj.sub', 3);
+        let r3 = client.invoke('echo', 'haha');
+        expect(await r1).to.equal(10);
+        expect(await r2).to.equal(7);
+        expect(obj.n).to.equal(7);
+        expect(await r3).to.equal('haha');
+      })
+    );
+
+    it(
+      'Test batch auto commit',
+      testIt(async () => {
+        client.beginBatch();
+
+        obj.n = 0;
+
+        let r1 = client.invoke('obj.add', 10);
+        let r2 = client.invoke('obj.sub', 3);
+        let r3 = client.invoke('echo', 'haha');
+
+        await asyncTimeout(1000);
+
+        expect(await r1).to.equal(10);
+        expect(await r2).to.equal(7);
+        expect(obj.n).to.equal(7);
+        expect(await r3).to.equal('haha');
+
+        client.endBatch();
+      })
+    );
+
+    it(
+      'Test batch object autocommit',
+      testIt(async () => {
+        const batch = client.createBatch();
+
+        obj.n = 0;
+
+        let r1 = batch.invoke('obj.add', 10);
+        let r2 = batch.invoke('obj.sub', 3);
+        let r3 = batch.invoke('echo', 'haha');
+
+        await asyncTimeout(1000);
+
+        expect(await r1).to.equal(10);
+        expect(await r2).to.equal(7);
+        expect(obj.n).to.equal(7);
+        expect(await r3).to.equal('haha');
+      })
+    );
+
+    const auth = { key: 'my_key', secret: 'my_secret_phrase' };
+
+    it(
+      'Test auth',
+      testIt(async () => {
+        rpc.setAuth({ [auth.key]: auth.secret });
+
+        let r, e;
+        try {
+          r = await client.invoke('echo', 'must thrown');
+        } catch (err) {
+          e = err;
+        }
+        expect(e).to.exist;
+
+        client.auth = auth;
+        r = await client.invoke('echo', 'must no thrown');
+        expect(r).to.equal('must no thrown');
+      })
+    );
+
+    it('Test method not found error thrown', async () => {
+      let r, e;
+      try {
+        r = await client.invoke('obj.not_exist_method', 200);
+      } catch (err) {
+        e = err;
+      }
+      expect(e).to.exist;
+      expect(r).to.be.undefined;
+
+      console.log('Error object output (not a error): \n', e);
+    });
+
+    it('Test call method with bug', async () => {
+      let r, e;
+      try {
+        let r = await client.invoke('obj.wrongMethod');
+      } catch (err) {
+        e = err;
+      }
+
+      expect(e).to.exist;
+      expect(r).to.be.undefined;
+      expect(e.code).to.be.within(-32099, -32000);
+
+      console.log('Error object output (not a error): \n', e);
+    });
+
+    it('Test call timeout', async () => {
+      client.timeout = 100;
+
+      let r, e;
+      try {
+        r = await client.invoke('echo', 'hello world!', 500);
+      } catch (err) {
+        e = err;
+      }
+
+      client.timeout = 5000;
+
+      expect(e).to.exist;
+      expect(r).to.be.undefined;
+      expect(e.message).to.equal('Timed out');
+    });
+  });
 });
