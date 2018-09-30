@@ -1,10 +1,10 @@
 {
   "name": "@pbardov/lead-json-rpc",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Simple JSON-RPC server with es7 features",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --exit"
   },
   "repository": {
     "type": "git",
