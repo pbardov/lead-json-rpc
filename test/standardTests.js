@@ -29,6 +29,7 @@ function standardTests({ rpc, client }) {
   it(
     'Test method call',
     testIt(async () => {
+      obj.n = 0;
       const r1 = client.invoke('obj.add', 10);
       const r2 = client.invoke('obj.sub', 3);
       const r3 = client.invoke('echo', 'haha');

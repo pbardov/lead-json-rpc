@@ -1,6 +1,6 @@
 {
   "name": "@pbardov/lead-json-rpc",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Simple JSON-RPC server with es7 features",
   "main": "index.js",
   "scripts": {
