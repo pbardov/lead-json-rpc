@@ -7,7 +7,7 @@ const chaiAsPromised = require('chai-as-promised');
 
 chai.use(chaiAsPromised);
 
-const { expect } = chai;
+const { expect, assert } = chai;
 const { testIt, asyncTimeout } = require('./helpers');
 const TestClass = require('./TestClass');
 
@@ -33,8 +33,10 @@ function standardTests({ rpc, client }) {
       const r1 = client.invoke('obj.add', 10);
       const r2 = client.invoke('obj.sub', 3);
       const r3 = client.invoke('echo', 'haha');
-      expect(await r1).to.equal(10);
-      expect(await r2).to.equal(7);
+
+      const [res1, res2] = await Promise.all([r1, r2]);
+      assert(typeof res1 === 'number', 'result must be a number');
+      assert(typeof res2 === 'number', 'result must be a number');
       expect(obj.n).to.equal(7);
       expect(await r3).to.equal('haha');
     })
@@ -53,8 +55,9 @@ function standardTests({ rpc, client }) {
 
       await asyncTimeout(1000);
 
-      expect(await r1).to.equal(10);
-      expect(await r2).to.equal(7);
+      const [res1, res2] = await Promise.all([r1, r2]);
+      assert(typeof res1 === 'number', 'result must be a number');
+      assert(typeof res2 === 'number', 'result must be a number');
       expect(obj.n).to.equal(7);
       expect(await r3).to.equal('haha');
 
@@ -76,8 +79,9 @@ function standardTests({ rpc, client }) {
 
       await asyncTimeout(1000);
 
-      expect(await r1).to.equal(10);
-      expect(await r2).to.equal(7);
+      const [res1, res2] = await Promise.all([r1, r2]);
+      assert(typeof res1 === 'number', 'result must be a number');
+      assert(typeof res2 === 'number', 'result must be a number');
       expect(obj.n).to.equal(7);
       expect(await r3).to.equal('haha');
     })
