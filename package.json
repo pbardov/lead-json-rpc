@@ -1,6 +1,6 @@
 {
   "name": "lead-json-rpc",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Simple JSON-RPC server with es7 features",
   "main": "index.js",
   "scripts": {
